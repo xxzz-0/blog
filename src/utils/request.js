@@ -2,7 +2,7 @@ import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
 
 const service = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: "http://192.168.142.132:8000/api",
   timeout: 10000,
   withCredentials: true,
 });
