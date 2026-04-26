@@ -235,9 +235,9 @@ const emailSettings = ref({
   email_host: "smtp.qq.com",
   email_port: 465,
   email_use_ssl: true,
-  email_host_user: "3382972457@qq.com",
-  email_host_password: "qaxzqfzgagkscibf",
-  default_from_email: "3382972457@qq.com",
+  email_host_user: "",
+  email_host_password: "",
+  default_from_email: "",
 });
 
 const loadSettings = async () => {
