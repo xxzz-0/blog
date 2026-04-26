@@ -281,10 +281,10 @@ const loadSettings = async () => {
       emailSettings.value.email_port = parseInt(res.data.email_port) || 465;
       emailSettings.value.email_use_ssl =
         (res.data.email_use_ssl || "true").toLowerCase() === "true";
-      emailSettings.value.email_host_user = res.data.email_host_user || "3382972457@qq.com";
-      emailSettings.value.email_host_password = res.data.email_host_password || "qaxzqfzgagkscibf";
+      emailSettings.value.email_host_user = res.data.email_host_user || "";
+      emailSettings.value.email_host_password = res.data.email_host_password || "";
       emailSettings.value.default_from_email =
-        res.data.default_from_email || res.data.email_host_user || "3382972457@qq.com";
+        res.data.default_from_email || res.data.email_host_user || "";
     }
   } catch (error) {
     ElMessage.error("加载设置失败");
