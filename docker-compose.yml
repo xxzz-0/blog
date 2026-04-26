@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  # Vue前端
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: blog_frontend
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - .:/app
+    networks:
+      - blog_network
+
+networks:
+  blog_network:
+    external: true
