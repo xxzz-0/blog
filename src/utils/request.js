@@ -1,8 +1,18 @@
 import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
 
+// 根据环境变量或部署方式自动设置 baseURL
+const getBaseURL = () => {
+  // 开发环境：使用本地后端服务
+  if (import.meta.env.DEV) {
+    return "http://localhost:8000/api";
+  }
+  // 生产环境：使用相对路径，依赖 Nginx 反向代理
+  return "/api";
+};
+
 const service = axios.create({
-  baseURL: "http://192.168.142.132:8000/api",
+  baseURL: getBaseURL(),
   timeout: 10000,
   withCredentials: true,
 });

@@ -2,9 +2,20 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import fs from "fs";
 import path from "path";
+import httpProxy from "http-proxy";
 
 const app = express();
 const port = 3000;
+const proxy = httpProxy.createProxyServer();
+
+// 代理 API 请求到后端服务
+app.use("/api", (req, res) => {
+  proxy.web(req, res, {
+    target: "http://192.168.142.132:8000",
+    changeOrigin: true,
+    secure: false,
+  });
+});
 
 async function startServer() {
   const isProduction = fs.existsSync(path.resolve("./dist"));

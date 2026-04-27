@@ -3,31 +3,16 @@ import { ElMessage } from "element-plus";
 // 导入封装的登录态工具
 import { getLoginState } from "@/utils/auth";
 
-// 导入页面组件
-import LoginView from "@/views/LoginView.vue";
-import RegisterView from "@/views/RegisterView.vue";
-import ResetPassword from "@/views/ResetPassword.vue";
-import ProfileView from "@/views/ProfileView.vue";
-import HomeView from "@/views/HomeView.vue";
-import ArticleDetail from "@/views/ArticleDetail.vue";
-import ArticleList from "@/views/ArticleList.vue";
-import PublishArticle from "@/views/PublishArticle.vue";
-import EditArticle from "@/views/EditArticle.vue";
-import FileManager from "@/views/FileManager.vue";
-import AdminDashboard from "@/views/AdminDashboard.vue";
-import ArchiveView from "@/views/ArchiveView.vue";
-import NotificationCenter from "@/views/NotificationCenter.vue";
-
 // 路由规则
 const routes = [
-  { path: "/", name: "home", component: HomeView },
-  { path: "/login", name: "login", component: LoginView },
-  { path: "/register", name: "register", component: RegisterView },
-  { path: "/reset-password", name: "resetPassword", component: ResetPassword },
+  { path: "/", name: "home", component: () => import("@/views/HomeView.vue") },
+  { path: "/login", name: "login", component: () => import("@/views/LoginView.vue") },
+  { path: "/register", name: "register", component: () => import("@/views/RegisterView.vue") },
+  { path: "/reset-password", name: "resetPassword", component: () => import("@/views/ResetPassword.vue") },
   {
     path: "/profile",
     name: "profile",
-    component: ProfileView,
+    component: () => import("@/views/ProfileView.vue"),
     meta: { requiresAuth: true }, // 需要登录验证的页面
   },
   {
@@ -40,13 +25,13 @@ const routes = [
   {
     path: "/publish-article",
     name: "PublishArticle",
-    component: PublishArticle,
+    component: () => import("@/views/PublishArticle.vue"),
     meta: { requiresAuth: true }, // 必须登录才能发布
   },
   {
     path: "/edit-article/:id",
     name: "EditArticle",
-    component: EditArticle,
+    component: () => import("@/views/EditArticle.vue"),
     meta: { requiresAuth: true },
   },
   {
@@ -57,27 +42,27 @@ const routes = [
   {
     path: "/archive",
     name: "Archive",
-    component: ArchiveView,
+    component: () => import("@/views/ArchiveView.vue"),
   },
-  { path: "/article/list", name: "articleList", component: ArticleList },
-  { path: "/article/:id", name: "articleDetail", component: ArticleDetail },
+  { path: "/article/list", name: "articleList", component: () => import("@/views/ArticleList.vue") },
+  { path: "/article/:id", name: "articleDetail", component: () => import("@/views/ArticleDetail.vue") },
 
   {
     path: "/file-manager",
     name: "fileManager",
-    component: FileManager,
+    component: () => import("@/views/FileManager.vue"),
     meta: { requiresAuth: true }, // 需要登录验证的页面
   },
   {
     path: "/admin",
     name: "admin",
-    component: AdminDashboard,
+    component: () => import("@/views/AdminDashboard.vue"),
     meta: { requiresAuth: true }, // 需要登录验证的页面
   },
   {
     path: "/notification",
     name: "notification",
-    component: NotificationCenter,
+    component: () => import("@/views/NotificationCenter.vue"),
     meta: { requiresAuth: true }, // 需要登录验证的页面
   },
   // 404兜底路由
