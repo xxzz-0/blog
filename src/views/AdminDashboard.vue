@@ -210,9 +210,9 @@
                     <div class="chart-header">
                       <span>访问统计</span>
                       <el-radio-group v-model="accessPeriod" @change="loadAccessStats">
-                        <el-radio label="day">日</el-radio>
-                        <el-radio label="week">周</el-radio>
-                        <el-radio label="month">月</el-radio>
+                        <el-radio value="day">日</el-radio>
+                        <el-radio value="week">周</el-radio>
+                        <el-radio value="month">月</el-radio>
                       </el-radio-group>
                     </div>
                   </template>
@@ -1329,8 +1329,6 @@ const loadComments = async () => {
     if (res.code === 200) {
       comments.value = res.data.results;
       commentTotal.value = res.data.count;
-      // 打印评论数据，检查是否包含 is_show 和 is_audit 字段
-      console.log("Comments data:", res.data.results);
     }
   } catch (error) {
     ElMessage.error("加载评论列表失败");
