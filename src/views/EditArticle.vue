@@ -43,13 +43,7 @@
           <div class="cover-upload-wrapper">
             <ImageUpload
               :http-request="handleCoverUploadRequest"
-              :imageUrl="
-                form.cover
-                  ? form.cover.startsWith('http')
-                    ? form.cover
-                    : `http://localhost:8000${form.cover}`
-                  : ''
-              "
+              :imageUrl="form.cover || ''"
               :disabled="loading"
               class="cover-uploader"
             />
@@ -244,17 +238,14 @@ const loadArticle = async () => {
     let content = data.content || "";
     if (content) {
       // 处理相对路径的情况
-      content = content.replace(
-        /src=(?:"|'|)(\/media\/[^"'\s]+)(?:"|'|)/g,
-        'src="http://localhost:8000$1"',
-      );
+      content = content.replace(/src=(?:"|'|)(\/media\/[^"'\s]+)(?:"|'|)/g, 'src="$1"');
       // 处理已经是绝对路径但可能缺少协议的情况
       content = content.replace(/src="(localhost:\d+\/media\/[^"\s]+)"/g, 'src="http://$1"');
     }
     // 处理封面URL，如果是相对路径则转换为绝对路径
     let coverUrl = data.cover || "";
     if (coverUrl && !coverUrl.startsWith("http")) {
-      coverUrl = `http://localhost:8000${coverUrl}`;
+      coverUrl = coverUrl.startsWith("http") ? coverUrl : coverUrl;
     }
 
     // 从分类列表中查找对应的分类ID
@@ -299,7 +290,7 @@ const handleCoverUploadRequest = async (options) => {
       let url = res.data.url;
       // 确保封面是完整的URL格式
       if (!url.startsWith("http")) {
-        url = `http://localhost:8000${url}`;
+        url = url.startsWith("http") ? url : url;
       }
       form.value.cover = url;
       ElMessage.success("封面上传成功");
@@ -347,7 +338,7 @@ const handlePaste = async (e) => {
         const res = await uploadContentImage(file);
         if (res.code === 200) {
           const url = res.data.url;
-          const imageUrl = url.startsWith("http") ? url : `http://localhost:8000${url}`;
+          const imageUrl = url.startsWith("http") ? url : url;
 
           // 记录上传的图片（用于后续清理）
           uploadedImages.value.push(imageUrl);
@@ -418,10 +409,10 @@ const handleContentImageUpload = async (options) => {
     if (res.code === 200) {
       const url = res.data.url;
       uploadedImageUrl.value = url; // 直接使用后端返回的相对路径
-      previewImageUrl.value = url.startsWith("http") ? url : `http://localhost:8000${url}`;
+      previewImageUrl.value = url.startsWith("http") ? url : url;
 
       // 记录上传的图片（使用绝对路径用于清理）
-      const absoluteUrl = url.startsWith("http") ? url : `http://localhost:8000${url}`;
+      const absoluteUrl = url.startsWith("http") ? url : url;
       uploadedImages.value.push(absoluteUrl);
 
       ElMessage.success("图片上传成功");
@@ -446,7 +437,9 @@ const confirmInsertImage = () => {
   // 插入时使用完整的绝对路径，这样在编辑器中就能正确显示
   const imageUrl = uploadedImageUrl.value.startsWith("http")
     ? uploadedImageUrl.value
-    : `http://localhost:8000${uploadedImageUrl.value}`;
+    : uploadedImageUrl.value.startsWith("http")
+      ? uploadedImageUrl.value
+      : uploadedImageUrl.value;
   const imgHtml = `<img src="${imageUrl}" style="max-width: 100%; margin: 10px 0; border-radius: 4px;" />`;
   console.log("插入的HTML:", imgHtml);
 
@@ -476,7 +469,7 @@ const extractUsedImages = (content) => {
     let url = match[1];
     // 将相对路径转换为绝对路径，以便与uploadedImages中的路径进行比较
     if (!url.startsWith("http")) {
-      url = `http://localhost:8000${url}`;
+      url = url.startsWith("http") ? url : url;
     }
     usedUrls.push(url);
   }
@@ -494,7 +487,7 @@ const cleanupUnusedImages = async () => {
     let coverUrl = form.value.cover;
     // 将封面图的相对路径转换为绝对路径
     if (!coverUrl.startsWith("http")) {
-      coverUrl = `http://localhost:8000${coverUrl}`;
+      coverUrl = coverUrl.startsWith("http") ? coverUrl : coverUrl;
     }
     allUsedImages.push(coverUrl);
   }
@@ -535,7 +528,7 @@ const submitUpdate = async () => {
 
     // 将编辑器中的绝对路径转换为相对路径，以便保存到数据库
     let content = editorContent;
-    content = content.replace(/src="http:\/\/localhost:8000(\/media\/[^"\s]+)"/g, 'src="$1"');
+    content = content.replace(/src="https?:\/\/[^/]+\/media\/([^"\s]+)"/g, 'src="/media/$1"');
 
     // 使用表单中的mentioned_users数组
     const articleData = {
@@ -550,7 +543,7 @@ const submitUpdate = async () => {
       // 确保封面是完整的URL格式
       let coverUrl = form.value.cover.trim();
       if (!coverUrl.startsWith("http")) {
-        coverUrl = `http://localhost:8000${coverUrl}`;
+        coverUrl = coverUrl.startsWith("http") ? coverUrl : coverUrl;
       }
       articleData.cover = coverUrl;
     }
@@ -585,7 +578,7 @@ const publishArticle = async () => {
 
     // 将编辑器中的绝对路径转换为相对路径，以便保存到数据库
     let content = editorContent;
-    content = content.replace(/src="http:\/\/localhost:8000(\/media\/[^"\s]+)"/g, 'src="$1"');
+    content = content.replace(/src="https?:\/\/[^/]+\/media\/([^"\s]+)"/g, 'src="/media/$1"');
 
     // 使用表单中的mentioned_users数组
     const articleData = {
@@ -601,7 +594,7 @@ const publishArticle = async () => {
       // 确保封面是完整的URL格式
       let coverUrl = form.value.cover.trim();
       if (!coverUrl.startsWith("http")) {
-        coverUrl = `http://localhost:8000${coverUrl}`;
+        coverUrl = coverUrl.startsWith("http") ? coverUrl : coverUrl;
       }
       articleData.cover = coverUrl;
     }

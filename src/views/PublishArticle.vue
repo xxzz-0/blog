@@ -313,7 +313,7 @@ const handleCoverUploadRequest = async (options) => {
     if (res.code === 200) {
       const url = res.data.url;
       // 转换为绝对路径，用于前端显示
-      const absoluteUrl = url.startsWith("http") ? url : `http://localhost:8000${url}`;
+      const absoluteUrl = url.startsWith("http") ? url : url;
       form.value.cover = absoluteUrl;
       // 记录上传的图片（使用绝对路径用于清理）
       uploadedImages.value.push({
@@ -365,7 +365,7 @@ const handlePaste = async (e) => {
         if (res.code === 200) {
           const url = res.data.url;
           // 插入时使用完整的绝对路径，这样在编辑器中就能正确显示
-          const imageUrl = url.startsWith("http") ? url : `http://localhost:8000${url}`;
+          const imageUrl = url.startsWith("http") ? url : url;
 
           // 记录上传的图片（用于后续清理）
           uploadedImages.value.push({
@@ -440,10 +440,10 @@ const handleContentImageUpload = async (options) => {
     if (res.code === 200) {
       const url = res.data.url;
       uploadedImageUrl.value = url; // 直接使用后端返回的相对路径
-      previewImageUrl.value = url.startsWith("http") ? url : `http://localhost:8000${url}`;
+      previewImageUrl.value = url.startsWith("http") ? url : url;
 
       // 记录上传的图片（使用绝对路径用于清理）
-      const absoluteUrl = url.startsWith("http") ? url : `http://localhost:8000${url}`;
+      const absoluteUrl = url.startsWith("http") ? url : url;
       uploadedImages.value.push({
         url: absoluteUrl,
         fileId: res.data.image_id,
@@ -470,7 +470,7 @@ const confirmInsertImage = () => {
   // 插入时使用完整的绝对路径，这样在编辑器中就能正确显示
   const imageUrl = uploadedImageUrl.value.startsWith("http")
     ? uploadedImageUrl.value
-    : `http://localhost:8000${uploadedImageUrl.value}`;
+    : uploadedImageUrl.value;
   const imgHtml = `<img src="${imageUrl}" style="max-width: 100%; margin: 10px 0; border-radius: 4px;" />`;
   console.log("imgHtml:", imgHtml);
 
@@ -580,7 +580,7 @@ const cleanupUnusedImages = async () => {
   });
 
   // 提取未使用的图片URLs
-  const unusedImageUrls = unusedImages.map(img => {
+  const unusedImageUrls = unusedImages.map((img) => {
     if (typeof img === "string") {
       return img;
     } else {

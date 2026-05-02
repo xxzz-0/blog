@@ -344,7 +344,7 @@ const sanitizedContent = computed(() => {
     // 如果是相对路径，添加后端服务器地址
     if (src && !src.startsWith("http://") && !src.startsWith("https://")) {
       // 使用后端服务器地址
-      const baseUrl = "http://localhost:8000";
+      const baseUrl = "";
       const newSrc = `${baseUrl}${src}`;
       return `<img${before}src="${newSrc}"${after}>`;
     }

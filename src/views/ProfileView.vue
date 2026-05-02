@@ -548,7 +548,7 @@ const cleanupOldAvatar = async () => {
 // 将相对路径转换为完整 URL
 const getFullImageUrl = (url) => {
   if (!url) return "";
-  return url.startsWith("http") ? url : `http://localhost:8000${url}`;
+  return url.startsWith("http") ? url : url;
 };
 
 // ==================================
@@ -607,7 +607,7 @@ const updateProfile = async () => {
           avatarUrl = "/" + avatarUrl;
         }
         // 添加后端地址前缀
-        avatarUrl = `http://localhost:8000${avatarUrl}`;
+        avatarUrl = avatarUrl.startsWith('http') ? avatarUrl : avatarUrl;
       }
 
       // 对 URL 进行编码（处理空格等特殊字符）
@@ -868,10 +868,10 @@ const sendVerificationEmail = async () => {
 };
 
 // 验证邮箱
-const verifyUserEmail = async (token) => {
+const verifyUserEmail = async (token, userId) => {
   try {
     loading.value = true;
-    await verifyEmail({ token });
+    await verifyEmail({ token, user_id: userId });
     ElMessage.success("邮箱验证成功");
     await loadUserProfile();
   } catch (err) {
@@ -889,11 +889,13 @@ onMounted(async () => {
   // 检查URL参数，处理邮箱验证
   const urlParams = new URLSearchParams(window.location.search);
   const token = urlParams.get("token");
+  const userId = urlParams.get("user_id");
   if (token) {
-    await verifyUserEmail(token);
+    await verifyUserEmail(token, userId);
     // 移除URL参数，避免重复验证
     const newUrl = new URL(window.location.href);
     newUrl.searchParams.delete("token");
+    newUrl.searchParams.delete("user_id");
     window.history.replaceState({}, "", newUrl.toString());
   }
 });
