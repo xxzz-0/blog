@@ -591,36 +591,24 @@ const updateProfile = async () => {
     loading.value = true;
     // 处理头像 URL，确保发送完整 URL
     const profileData = { ...profileForm.value };
-    // console.log("原始表单数据:", profileData);
-
     // 强制处理头像 URL
     if (profileData.avatar) {
-      // console.log("原始头像 URL:", profileData.avatar);
-
-      // 确保发送的是完整 URL（后端 URLField 要求）
+      // 确保发送的是完整URL（后端URLField要求）
       let avatarUrl = profileData.avatar;
 
-      // 如果是相对路径，转换为完整 URL
+      // 如果是相对路径，转换为完整URL
       if (!avatarUrl.startsWith("http://") && !avatarUrl.startsWith("https://")) {
-        // 确保路径以 / 开头
+        // 确保路径以/开头
         if (!avatarUrl.startsWith("/")) {
           avatarUrl = "/" + avatarUrl;
         }
-        // 添加后端地址前缀
-        avatarUrl = avatarUrl.startsWith('http') ? avatarUrl : avatarUrl;
       }
 
-      // 对 URL 进行编码（处理空格等特殊字符）
+      // 对URL进行编码（处理空格等特殊字符）
       avatarUrl = encodeURI(avatarUrl);
 
       profileData.avatar = avatarUrl;
-      // console.log("处理后的头像 URL:", profileData.avatar);
     }
-
-    // console.log("发送到后端的数据:", profileData);
-
-    // 测试用：直接打印发送的数据
-    // console.log("发送的 avatar 字段:", profileData.avatar);
 
     await updateUserInfo(profileData);
 
@@ -685,7 +673,6 @@ const loadMyArticleList = async () => {
       page: myArticlePage.value.page,
       page_size: myArticlePage.value.pageSize,
     });
-    // console.log("loadMyArticleList response:", res);
     // 尝试不同的响应结构
     if (res.data) {
       // 如果 res 有 data 字段
@@ -696,8 +683,6 @@ const loadMyArticleList = async () => {
       myArticleList.value = res.results || [];
       myTotal.value = res.count || 0;
     }
-    // console.log("myArticleList:", myArticleList.value);
-    // console.log("myTotal:", myTotal.value);
   } catch (err) {
     console.error("loadMyArticleList error:", err);
     ElMessage.error("加载我的文章失败");
@@ -731,7 +716,6 @@ const loadMyDraftList = async () => {
       page: myDraftPage.value.page,
       page_size: myDraftPage.value.pageSize,
     });
-    // console.log("loadMyDraftList response:", res);
     // 尝试不同的响应结构
     if (res.data) {
       // 如果 res 有 data 字段
@@ -742,8 +726,6 @@ const loadMyDraftList = async () => {
       myDraftList.value = res.results || [];
       myDraftTotal.value = res.count || 0;
     }
-    // console.log("myDraftList:", myDraftList.value);
-    // console.log("myDraftTotal:", myDraftTotal.value);
   } catch (err) {
     console.error("loadMyDraftList error:", err);
     ElMessage.error("加载我的草稿失败");
@@ -856,11 +838,9 @@ const sendVerificationEmail = async () => {
 
   try {
     loading.value = true;
-    // console.log("发送验证邮件的邮箱地址:", profileForm.value.email);
     await sendEmailVerification({ email: profileForm.value.email });
     ElMessage.success("验证邮件已发送，请查收");
   } catch (err) {
-    // console.log("发送验证邮件失败:", err);
     ElMessage.error(err.msg || "发送验证邮件失败");
   } finally {
     loading.value = false;

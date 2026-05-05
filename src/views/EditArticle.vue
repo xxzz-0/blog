@@ -203,7 +203,6 @@ const loadCategory = async () => {
     } else {
       categoryList.value = res.results || res.data || res || [];
     }
-    console.log("分类列表:", categoryList.value);
   } catch (err) {
     console.error("获取分类列表失败：", err);
     ElMessage.error("获取分类列表失败");
@@ -234,19 +233,10 @@ const loadArticle = async () => {
   try {
     const res = await getArticleDetail(articleId);
     const data = res.data || res;
-    // 处理内容中的图片URL，将相对路径转换为绝对路径以便在编辑器中显示
+
+    // 直接使用后端返回的内容和封面URL
     let content = data.content || "";
-    if (content) {
-      // 处理相对路径的情况
-      content = content.replace(/src=(?:"|'|)(\/media\/[^"'\s]+)(?:"|'|)/g, 'src="$1"');
-      // 处理已经是绝对路径但可能缺少协议的情况
-      content = content.replace(/src="(localhost:\d+\/media\/[^"\s]+)"/g, 'src="http://$1"');
-    }
-    // 处理封面URL，如果是相对路径则转换为绝对路径
     let coverUrl = data.cover || "";
-    if (coverUrl && !coverUrl.startsWith("http")) {
-      coverUrl = coverUrl.startsWith("http") ? coverUrl : coverUrl;
-    }
 
     // 从分类列表中查找对应的分类ID
     let categoryId = "";
@@ -272,10 +262,6 @@ const loadArticle = async () => {
         editorContent = content;
       }
     });
-
-    console.log("文章详情数据:", data);
-    console.log("分类列表:", categoryList.value);
-    console.log("匹配的分类ID:", categoryId);
   } catch (err) {
     console.error("加载文章详情失败：", err);
     ElMessage.error("加载文章详情失败");
@@ -307,76 +293,103 @@ const handleCoverUploadRequest = async (options) => {
 const handleContentInput = () => {
   if (contentEditor.value) {
     editorContent = contentEditor.value.innerHTML;
-    console.log("编辑器内容:", editorContent);
+
     // 不再直接更新 form.content，避免 v-html 重新渲染导致光标重置
     // form.value.content = editorContent;
   }
 };
 
-// 处理粘贴事件（支持粘贴图片）
+// 处理粘贴事件（支持粘贴图片和纯文本）
 const handlePaste = async (e) => {
+  // 先尝试获取剪贴板里的图片
   const items = e.clipboardData?.items;
-  if (!items) return;
+  let hasImage = false;
 
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
+  if (items) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
 
-    // 检查是否是图片
-    if (item.type.indexOf("image") !== -1) {
+      // 检查是否是图片
+      if (item.type.indexOf("image") !== -1) {
+        hasImage = true;
+        e.preventDefault(); // 阻止默认粘贴行为
+
+        const blob = item.getAsFile();
+        if (!blob) continue;
+
+        // 创建 File 对象
+        const file = new File([blob], `pasted-image-${Date.now()}.png`, {
+          type: blob.type,
+        });
+
+        try {
+          // 上传图片
+          const res = await uploadContentImage(file);
+          if (res.code === 200) {
+            const url = res.data.url;
+
+            // 记录上传的图片（用于后续清理）
+            uploadedImages.value.push(url);
+
+            // 插入图片到编辑器（使用后端返回的相对路径）
+            const imgHtml = `<img src="${url}" style="max-width: 100%; margin: 10px 0; border-radius: 4px;" />`;
+
+            if (contentEditor.value) {
+              const selection = window.getSelection();
+              if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const tempDiv = document.createElement("div");
+                tempDiv.innerHTML = imgHtml;
+                const imgNode = tempDiv.firstChild;
+                range.insertNode(imgNode);
+                range.setStartAfter(imgNode);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+              } else {
+                contentEditor.value.innerHTML += imgHtml;
+              }
+              // 更新非响应式变量
+              editorContent = contentEditor.value.innerHTML;
+            }
+
+            ElMessage.success("图片粘贴成功");
+          } else {
+            ElMessage.error(res.msg || "图片上传失败");
+          }
+        } catch (err) {
+          console.error("粘贴图片上传失败:", err);
+          ElMessage.error("图片上传失败，请重试");
+        }
+
+        break; // 只处理第一个图片
+      }
+    }
+  }
+
+  // 如果不是图片，检查是不是纯文本，如果是HTML格式，我们清理一下只保留纯文本
+  if (!hasImage && e.clipboardData) {
+    // 获取纯文本内容
+    const plainText = e.clipboardData.getData("text/plain");
+    if (plainText) {
       e.preventDefault(); // 阻止默认粘贴行为
 
-      const blob = item.getAsFile();
-      if (!blob) continue;
-
-      // 创建 File 对象
-      const file = new File([blob], `pasted-image-${Date.now()}.png`, {
-        type: blob.type,
-      });
-
-      try {
-        // 上传图片
-        const res = await uploadContentImage(file);
-        if (res.code === 200) {
-          const url = res.data.url;
-          const imageUrl = url.startsWith("http") ? url : url;
-
-          // 记录上传的图片（用于后续清理）
-          uploadedImages.value.push(imageUrl);
-
-          // 插入图片到编辑器 - 编辑器中显示绝对路径，但存储时会转换为相对路径
-          const imgHtml = `<img src="${imageUrl}" style="max-width: 100%; margin: 10px 0; border-radius: 4px;" />`;
-
-          if (contentEditor.value) {
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-              const range = selection.getRangeAt(0);
-              const tempDiv = document.createElement("div");
-              tempDiv.innerHTML = imgHtml;
-              const imgNode = tempDiv.firstChild;
-              range.insertNode(imgNode);
-              range.setStartAfter(imgNode);
-              range.collapse(true);
-              selection.removeAllRanges();
-              selection.addRange(range);
-            } else {
-              contentEditor.value.innerHTML += imgHtml;
-            }
-            // 更新非响应式变量
-            editorContent = contentEditor.value.innerHTML;
-            // 不再更新 form.content，避免 v-html 重新渲染导致光标重置
-            // form.value.content = editorContent;
-          }
-
-          ElMessage.success("图片粘贴成功");
+      if (contentEditor.value) {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          const textNode = document.createTextNode(plainText);
+          range.insertNode(textNode);
+          range.setStartAfter(textNode);
+          range.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(range);
         } else {
-          ElMessage.error(res.msg || "图片上传失败");
+          contentEditor.value.innerText += plainText;
         }
-      } catch (err) {
-        console.error("粘贴图片上传失败:", err);
-        ElMessage.error("图片上传失败，请重试");
+        editorContent = contentEditor.value.innerHTML;
       }
-
-      break; // 只处理第一个图片
     }
   }
 };
@@ -427,21 +440,16 @@ const handleContentImageUpload = async (options) => {
 
 // 确认插入图片到编辑器
 const confirmInsertImage = () => {
-  console.log("确认插入图片，uploadedImageUrl:", uploadedImageUrl.value);
   if (!uploadedImageUrl.value) {
     ElMessage.warning("请先上传图片");
     return;
   }
 
-  console.log("confirmInsertImage called, contentEditor.value:", contentEditor.value);
   // 插入时使用完整的绝对路径，这样在编辑器中就能正确显示
   const imageUrl = uploadedImageUrl.value.startsWith("http")
     ? uploadedImageUrl.value
-    : uploadedImageUrl.value.startsWith("http")
-      ? uploadedImageUrl.value
-      : uploadedImageUrl.value;
+    : uploadedImageUrl.value;
   const imgHtml = `<img src="${imageUrl}" style="max-width: 100%; margin: 10px 0; border-radius: 4px;" />`;
-  console.log("插入的HTML:", imgHtml);
 
   // 直接更新编辑器的 DOM
   if (contentEditor.value) {
@@ -449,7 +457,6 @@ const confirmInsertImage = () => {
     contentEditor.value.innerHTML += imgHtml;
     // 更新非响应式变量
     editorContent = contentEditor.value.innerHTML;
-    console.log("confirmInsertImage: editorContent updated", editorContent);
   } else {
     console.error("contentEditor is null, cannot insert image");
   }
@@ -502,7 +509,6 @@ const cleanupUnusedImages = async () => {
       const res = await deleteImage(unusedImages);
 
       if (res.code === 200) {
-        console.log("清理未使用图片成功:", res.data);
       } else {
         console.error("清理未使用图片失败:", res.msg);
       }

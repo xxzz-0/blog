@@ -277,7 +277,7 @@ const loadCategory = async () => {
     } else {
       categoryList.value = res.results || res.data || res || [];
     }
-    console.log("分类列表:", categoryList.value);
+
     if (categoryList.value.length > 0) {
       form.value.category = categoryList.value[0].id;
     }
@@ -339,75 +339,100 @@ const handleContentInput = () => {
   }
 };
 
-// 处理粘贴事件（支持粘贴图片）
+// 处理粘贴事件（支持粘贴图片和纯文本）
 const handlePaste = async (e) => {
+  // 先尝试获取剪贴板里的图片
   const items = e.clipboardData?.items;
-  if (!items) return;
+  let hasImage = false;
 
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
+  if (items) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
 
-    // 检查是否是图片
-    if (item.type.indexOf("image") !== -1) {
+      // 检查是否是图片
+      if (item.type.indexOf("image") !== -1) {
+        hasImage = true;
+        e.preventDefault(); // 阻止默认粘贴行为
+
+        const blob = item.getAsFile();
+        if (!blob) continue;
+
+        // 创建 File 对象
+        const file = new File([blob], `pasted-image-${Date.now()}.png`, {
+          type: blob.type,
+        });
+
+        try {
+          // 上传图片
+          const res = await uploadContentImage(file);
+          if (res.code === 200) {
+            const url = res.data.url;
+
+            // 记录上传的图片（用于后续清理）
+            uploadedImages.value.push({
+              url: url,
+              fileId: res.data.image_id,
+            });
+
+            // 插入图片到编辑器（使用后端返回的相对路径）
+            const imgHtml = `<img src="${url}" style="max-width: 100%; margin: 10px 0; border-radius: 4px;" />`;
+
+            if (contentEditor.value) {
+              const selection = window.getSelection();
+              if (selection.rangeCount > 0) {
+                const range = selection.getRangeAt(0);
+                const tempDiv = document.createElement("div");
+                tempDiv.innerHTML = imgHtml;
+                const imgNode = tempDiv.firstChild;
+                range.insertNode(imgNode);
+                range.setStartAfter(imgNode);
+                range.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(range);
+              } else {
+                contentEditor.value.innerHTML += imgHtml;
+              }
+              // 更新非响应式变量
+              editorContent = contentEditor.value.innerHTML;
+            }
+
+            ElMessage.success("图片粘贴成功");
+          } else {
+            ElMessage.error(res.msg || "图片上传失败");
+          }
+        } catch (err) {
+          console.error("粘贴图片上传失败:", err);
+          ElMessage.error("图片上传失败，请重试");
+        }
+
+        break; // 只处理第一个图片
+      }
+    }
+  }
+
+  // 如果不是图片，检查是不是纯文本，如果是HTML格式，我们清理一下只保留纯文本
+  if (!hasImage && e.clipboardData) {
+    // 获取纯文本内容
+    const plainText = e.clipboardData.getData("text/plain");
+    if (plainText) {
       e.preventDefault(); // 阻止默认粘贴行为
 
-      const blob = item.getAsFile();
-      if (!blob) continue;
-
-      // 创建 File 对象
-      const file = new File([blob], `pasted-image-${Date.now()}.png`, {
-        type: blob.type,
-      });
-
-      try {
-        // 上传图片
-        const res = await uploadContentImage(file);
-        if (res.code === 200) {
-          const url = res.data.url;
-          // 插入时使用完整的绝对路径，这样在编辑器中就能正确显示
-          const imageUrl = url.startsWith("http") ? url : url;
-
-          // 记录上传的图片（用于后续清理）
-          uploadedImages.value.push({
-            url: imageUrl,
-            fileId: res.data.image_id,
-          });
-
-          // 插入图片到编辑器
-          const imgHtml = `<img src="${imageUrl}" style="max-width: 100%; margin: 10px 0; border-radius: 4px;" />`;
-
-          if (contentEditor.value) {
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-              const range = selection.getRangeAt(0);
-              const tempDiv = document.createElement("div");
-              tempDiv.innerHTML = imgHtml;
-              const imgNode = tempDiv.firstChild;
-              range.insertNode(imgNode);
-              range.setStartAfter(imgNode);
-              range.collapse(true);
-              selection.removeAllRanges();
-              selection.addRange(range);
-            } else {
-              contentEditor.value.innerHTML += imgHtml;
-            }
-            // 更新非响应式变量
-            editorContent = contentEditor.value.innerHTML;
-            // 不再更新 form.content，避免 v-html 重新渲染导致光标重置
-            // form.value.content = editorContent;
-            console.log("handlePaste: editorContent updated", editorContent);
-          }
-
-          ElMessage.success("图片粘贴成功");
+      if (contentEditor.value) {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          const textNode = document.createTextNode(plainText);
+          range.insertNode(textNode);
+          range.setStartAfter(textNode);
+          range.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(range);
         } else {
-          ElMessage.error(res.msg || "图片上传失败");
+          contentEditor.value.innerText += plainText;
         }
-      } catch (err) {
-        console.error("粘贴图片上传失败:", err);
-        ElMessage.error("图片上传失败，请重试");
+        editorContent = contentEditor.value.innerHTML;
       }
-
-      break; // 只处理第一个图片
     }
   }
 };
@@ -466,13 +491,11 @@ const confirmInsertImage = () => {
     return;
   }
 
-  console.log("confirmInsertImage called, contentEditor.value:", contentEditor.value);
   // 插入时使用完整的绝对路径，这样在编辑器中就能正确显示
   const imageUrl = uploadedImageUrl.value.startsWith("http")
     ? uploadedImageUrl.value
     : uploadedImageUrl.value;
   const imgHtml = `<img src="${imageUrl}" style="max-width: 100%; margin: 10px 0; border-radius: 4px;" />`;
-  console.log("imgHtml:", imgHtml);
 
   // 直接更新编辑器的 DOM
   if (contentEditor.value) {
@@ -480,7 +503,6 @@ const confirmInsertImage = () => {
     contentEditor.value.innerHTML += imgHtml;
     // 更新非响应式变量
     editorContent = contentEditor.value.innerHTML;
-    console.log("confirmInsertImage: editorContent updated", editorContent);
   } else {
     console.error("contentEditor is null, cannot insert image");
   }
@@ -498,14 +520,12 @@ const handleUserListClick = (event) => {
     const userId = parseInt(userItem.dataset.userId);
     const userNickname = userItem.dataset.userNickname;
     const user = { id: userId, nickname: userNickname };
-    console.log("点击用户:", user);
     selectUser(user);
   }
 };
 
 // 选择用户
 const selectUser = (user) => {
-  console.log("选择用户:", user);
   if (contentEditor.value) {
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
@@ -526,7 +546,6 @@ const selectUser = (user) => {
         // 将用户ID添加到mentioned_users数组
         if (!form.value.mentioned_users.includes(user.id)) {
           form.value.mentioned_users.push(user.id);
-          console.log("添加用户到mentioned_users:", user.id);
         }
 
         // 移动光标到@用户后面
@@ -538,11 +557,9 @@ const selectUser = (user) => {
 
         // 隐藏用户列表
         showUserList.value = false;
-        console.log("隐藏用户列表");
 
         // 更新编辑器内容
         editorContent = contentEditor.value.innerHTML;
-        console.log("更新编辑器内容");
       }
     }
   }
@@ -612,14 +629,11 @@ const submitArticle = async () => {
   try {
     loading.value = true;
 
-    console.log("submitArticle called");
     // 提交前从 DOM 读取最新内容，确保包含用户输入和插入的图片
     if (contentEditor.value) {
       editorContent = contentEditor.value.innerHTML;
       form.value.content = editorContent;
-      console.log("editorContent from DOM:", editorContent);
     }
-    console.log("form.value.content before validate:", form.value.content);
 
     // 校验
     await formRef.value.validate();
@@ -661,7 +675,11 @@ const submitArticle = async () => {
       // 清理未使用的图片
       await cleanupUnusedImages();
 
-      ElMessage.success("文章发布成功！文章将在5分钟后可在搜索中找到");
+      if (form.value.is_scheduled) {
+        ElMessage.success("定时任务创建成功！文章将在指定时间发布，大约5分钟后可在搜索中找到");
+      } else {
+        ElMessage.success("文章发布成功！");
+      }
       setTimeout(() => router.push("/profile"), 1500);
     } else {
       ElMessage.warning(res.msg || "发布失败");

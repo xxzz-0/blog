@@ -50,17 +50,14 @@ const handleDetail = () => {
     ElMessage.error("文章ID不存在，无法跳转");
     return;
   }
-  // 2. 打印调试信息
-  console.log("跳转详情页，ID：", props.article.id);
-  console.log("跳转路径：", `/article/${props.article.id}`);
-  // 3. 手动跳转（替代router-link，更稳定）
+  // 2. 手动跳转（替代router-link，更稳定）
   try {
     router.push({
       name: "articleDetail", // 用路由名称跳转（比路径更可靠）
       params: { id: props.article.id },
     });
   } catch (err) {
-    console.error("跳转失败：", err);
+    console.error("跳转失败:", err);
     ElMessage.error("跳转失败，请刷新页面重试");
   }
 };

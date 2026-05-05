@@ -336,23 +336,10 @@ const isLogin = computed(() => authStore.isLoggedIn);
 const sanitizedContent = computed(() => {
   if (!article.value?.content) return "";
 
-  // 先净化 HTML
-  let content = sanitizeHtml(article.value.content);
-
-  // 修复图片 URL，确保是完整的绝对路径
-  content = content.replace(/<img([^>]*?)src="([^"]+)"([^>]*?)>/g, (match, before, src, after) => {
-    // 如果是相对路径，添加后端服务器地址
-    if (src && !src.startsWith("http://") && !src.startsWith("https://")) {
-      // 使用后端服务器地址
-      const baseUrl = "";
-      const newSrc = `${baseUrl}${src}`;
-      return `<img${before}src="${newSrc}"${after}>`;
-    }
-
-    return match;
-  });
-
-  return content;
+  // 直接使用后端返回的 HTML，只做 XSS 净化
+  // 后端返回的图片 URL 是 /media/... 格式的相对路径
+  // 浏览器会自动相对于当前域名请求
+  return sanitizeHtml(article.value.content);
 });
 
 const commentList = ref([]);
