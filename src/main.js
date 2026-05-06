@@ -1,12 +1,11 @@
 import { createSSRApp } from "vue";
-import ElementPlus from "element-plus"; // 可选，UI组件
-import "element-plus/dist/index.css"; // 可选，UI样式
+import ElementPlus from "element-plus";
+import "element-plus/dist/index.css";
+import "element-plus/theme-chalk/dark/css-vars.css";
 import App from "./App.vue";
 import { createRouterInstance } from "./router";
 import { createPinia } from "pinia";
 import { initTheme } from "./utils/theme";
-import SettingsService from "./services/SettingsService";
-
 // 创建Vue实例（单实例，符合前后端分离场景）
 const app = createSSRApp(App);
 
@@ -28,9 +27,6 @@ app.config.errorHandler = (err) => {
 
 // 初始化主题
 initTheme();
-
-// 初始化设置
-SettingsService.getSettings();
 
 // 挂载到index.html的#app
 app.mount("#app");

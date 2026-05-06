@@ -86,7 +86,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { sendResetCode, resetPassword as resetPasswordApi } from '@/api/user';
@@ -163,6 +163,13 @@ const sendCode = async () => {
     ElMessage.error(error.msg || '发送验证码失败');
   }
 };
+
+onBeforeUnmount(() => {
+  if (timer.value) {
+    clearInterval(timer.value);
+    timer.value = null;
+  }
+});
 
 const resetPassword = async () => {
   const formRef = document.querySelector('.reset-form');

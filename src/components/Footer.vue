@@ -15,23 +15,11 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from "vue";
+import { computed } from "vue";
 import { useSettingsStore } from "@/stores/settings";
 
-// 初始化 Pinia store
 const settingsStore = useSettingsStore();
-
-// 计算属性
 const siteSettings = computed(() => settingsStore.settings);
-
-// 加载网站设置
-const loadSiteSettings = async () => {
-  await settingsStore.loadSettings();
-};
-
-onMounted(() => {
-  loadSiteSettings();
-});
 </script>
 
 <style scoped>

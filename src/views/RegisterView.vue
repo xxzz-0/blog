@@ -58,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage } from "element-plus";
 import { register, sendRegisterCode } from "@/api/user";
@@ -123,6 +123,13 @@ const sendCode = async () => {
     ElMessage.error(error.msg || "发送验证码失败");
   }
 };
+
+onBeforeUnmount(() => {
+  if (timer.value) {
+    clearInterval(timer.value);
+    timer.value = null;
+  }
+});
 
 // 注册核心逻辑
 const handleRegister = async () => {

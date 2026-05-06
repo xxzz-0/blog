@@ -27,14 +27,19 @@ export const useSettingsStore = defineStore('settings', {
      * @returns {Promise<object>}
      */
     async loadSettings() {
+      // 已加载则跳过，避免重复请求
+      if (this.isLoaded) return this.siteSettings;
       try {
         const settings = await SettingsService.getSettings();
         if (settings) {
           this.siteSettings = {
             site_name: settings.site_name || '博客平台',
             site_subtitle: settings.site_subtitle || '分享知识，连接世界',
+            site_description: settings.site_description || '',
+            copyright: settings.copyright || '',
+            contact_email: settings.contact_email || '',
+            contact_phone: settings.contact_phone || '',
           };
-          // 设置浏览器标签页标题
           document.title = `${this.siteSettings.site_name} - ${this.siteSettings.site_subtitle}`;
         }
         this.isLoaded = true;

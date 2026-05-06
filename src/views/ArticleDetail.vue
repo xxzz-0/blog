@@ -137,131 +137,17 @@
           </div>
 
           <div class="comment-list">
-            <div
+            <CommentItem
               v-for="comment in commentList"
               :key="comment.uuid"
-              style="padding: 15px; border-bottom: 1px solid #f2f2f2"
-            >
-              <div style="font-weight: bold">{{ comment.nickname || comment.username }}</div>
-              <div style="margin: 5px 0; white-space: pre-wrap">{{ comment.content }}</div>
-              <div style="font-size: 12px; color: #999">
-                <span>{{ comment.created_at }}</span>
-                <span style="margin-left: 10px">点赞：{{ comment.like_count }}</span>
-              </div>
-
-              <div style="margin-top: 8px; display: flex; gap: 10px">
-                <el-button
-                  size="small"
-                  :type="comment.is_liked ? 'danger' : 'default'"
-                  :disabled="likingComments.has(comment.uuid)"
-                  @click="comment.is_liked ? doUnlikeComment(comment.uuid) : doLikeComment(comment.uuid)"
-                >
-                  {{ comment.is_liked ? "取消点赞" : "点赞" }}
-                </el-button>
-                <el-button size="small" @click="showReply(comment.uuid)"> 回复 </el-button>
-                <el-button
-                  v-if="currentUser && comment.nickname === currentUser.nickname"
-                  size="small"
-                  type="danger"
-                  plain
-                  @click="doDeleteComment(comment.uuid)"
-                >
-                  删除
-                </el-button>
-                <el-button
-                  size="small"
-                  type="warning"
-                  plain
-                  @click="showReportDialog(comment.uuid)"
-                >
-                  举报
-                </el-button>
-              </div>
-
-              <div
-                v-for="child in comment.children"
-                :key="child.uuid"
-                style="margin-left: 30px; padding: 10px 0; font-size: 14px"
-              >
-                <div style="font-weight: bold">{{ child.nickname || child.username }}</div>
-                <div style="margin: 4px 0">{{ child.content }}</div>
-                <div style="font-size: 12px; color: #999">
-                  <span>{{ child.created_at }}</span>
-                  <span style="margin-left: 10px">点赞：{{ child.like_count }}</span>
-                </div>
-
-                <div style="margin-top: 8px; display: flex; gap: 10px">
-                  <el-button
-                    size="small"
-                    :type="child.is_liked ? 'danger' : 'default'"
-                    :disabled="likingComments.has(child.uuid)"
-                    @click="child.is_liked ? doUnlikeComment(child.uuid) : doLikeComment(child.uuid)"
-                  >
-                    {{ child.is_liked ? "取消点赞" : "点赞" }}
-                  </el-button>
-                  <el-button size="small" @click="showReply(child.uuid)">回复</el-button>
-                  <el-button
-                    v-if="currentUser && child.nickname === currentUser.nickname"
-                    size="small"
-                    type="danger"
-                    plain
-                    @click="doDeleteComment(child.uuid)"
-                    >删除</el-button
-                  >
-                  <el-button
-                    size="small"
-                    type="warning"
-                    plain
-                    @click="showReportDialog(child.uuid)"
-                  >
-                    举报
-                  </el-button>
-                </div>
-
-                <div
-                  v-for="grandchild in child.children"
-                  :key="grandchild.uuid"
-                  style="margin-left: 60px; padding: 10px 0; font-size: 13px"
-                >
-                  <div style="font-weight: bold">
-                    {{ grandchild.nickname || grandchild.username }}
-                  </div>
-                  <div style="margin: 4px 0">{{ grandchild.content }}</div>
-                  <div style="font-size: 12px; color: #999">
-                    <span>{{ grandchild.created_at }}</span>
-                    <span style="margin-left: 10px">点赞：{{ grandchild.like_count }}</span>
-                  </div>
-
-                  <div style="margin-top: 8px; display: flex; gap: 10px">
-                    <el-button
-                    size="small"
-                    :type="grandchild.is_liked ? 'danger' : 'default'"
-                    :disabled="likingComments.has(grandchild.uuid)"
-                    @click="grandchild.is_liked ? doUnlikeComment(grandchild.uuid) : doLikeComment(grandchild.uuid)"
-                  >
-                    {{ grandchild.is_liked ? "取消点赞" : "点赞" }}
-                  </el-button>
-                    <el-button size="small" @click="showReply(grandchild.uuid)">回复</el-button>
-                    <el-button
-                      v-if="currentUser && grandchild.nickname === currentUser.nickname"
-                      size="small"
-                      type="danger"
-                      plain
-                      @click="doDeleteComment(grandchild.uuid)"
-                      >删除</el-button
-                    >
-                    <el-button
-                      size="small"
-                      type="warning"
-                      plain
-                      @click="showReportDialog(grandchild.uuid)"
-                    >
-                      举报
-                    </el-button>
-                  </div>
-                </div>
-              </div>
-            </div>
+              :comment="comment"
+              :current-user="currentUser"
+              :liking-comments="likingComments"
+              @toggle-like="handleCommentLike"
+              @reply="showReply"
+              @delete="doDeleteComment"
+              @report="showReportDialog"
+            />
 
             <el-empty v-if="commentList.length === 0" description="暂无评论"></el-empty>
           </div>
@@ -295,6 +181,7 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import { Loading } from "@element-plus/icons-vue";
 import NavBar from "@/components/NavBar.vue";
 import Footer from "@/components/Footer.vue";
+import CommentItem from "@/components/CommentItem.vue";
 import { sanitizeHtml } from "@/utils/xss.js";
 import {
   getArticleDetail,
@@ -513,6 +400,10 @@ const submitReply = async (uuid) => {
 
 // 评论点赞操作状态
 const likingComments = ref(new Set());
+
+const handleCommentLike = (uuid, isLiked) => {
+  isLiked ? doUnlikeComment(uuid) : doLikeComment(uuid);
+};
 
 const doLikeComment = async (uuid) => {
   if (!isLogin.value) return ElMessage.warning("请登录");

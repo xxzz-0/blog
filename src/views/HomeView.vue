@@ -61,11 +61,6 @@ const settingsStore = useSettingsStore();
 // 计算属性
 const siteSettings = computed(() => settingsStore.settings);
 
-// 加载网站设置
-const loadSiteSettings = async () => {
-  await settingsStore.loadSettings();
-};
-
 // 加载首页文章列表（分页）
 const loadArticleList = async () => {
   try {
@@ -86,7 +81,6 @@ const loadArticleList = async () => {
 
 // 页面加载
 onMounted(() => {
-  loadSiteSettings();
   loadArticleList();
 });
 </script>

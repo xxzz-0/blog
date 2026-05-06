@@ -17,10 +17,6 @@ const service = axios.create({
   withCredentials: true,
 });
 
-// 暂时注释掉未使用的变量
-// let isRefreshing = false;
-// let requestQueue = [];
-
 service.interceptors.request.use(
   (config) => {
     // 后端只接受 httponly cookie，浏览器会自动携带
@@ -100,13 +96,11 @@ service.interceptors.response.use(
     }
     // 4. 检查登录态接口（特殊处理，不视为错误）
     if (originalRequest.url.includes("check-login/")) {
-      // 如果有响应数据，返回响应数据
-      if (error.response && error.response.data) {
+      if (error.response) {
         return Promise.resolve(error.response.data);
-      } else {
-        // 如果没有响应数据，返回默认的未登录状态
-        return Promise.resolve({ is_login: false, user: {} });
       }
+      // 网络错误不伪装成功，让 caller 处理
+      return Promise.reject(error);
     }
     // 5. 找回密码相关接口
     if (isResetPasswordApi) {

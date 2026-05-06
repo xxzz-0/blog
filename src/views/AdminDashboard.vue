@@ -1226,16 +1226,14 @@ const loadArticles = async () => {
       page_size: articlePageSize.value,
     };
 
-    // 构建搜索参数
-    const searchTerms = [];
+    // 只通过标题搜索，使用单独的title参数
     if (articleFilter.value.title) {
-      searchTerms.push(articleFilter.value.title);
+      params.title = articleFilter.value.title;
     }
+
+    // 作者搜索使用单独的author参数
     if (articleFilter.value.author) {
-      searchTerms.push(articleFilter.value.author);
-    }
-    if (searchTerms.length > 0) {
-      params.search = searchTerms.join(" ");
+      params.author = articleFilter.value.author;
     }
 
     if (articleFilter.value.status) {

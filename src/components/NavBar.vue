@@ -1,13 +1,18 @@
 <template>
   <el-header class="navbar">
     <div class="navbar-container">
+      <!-- 移动端汉堡菜单按钮 -->
+      <div class="mobile-menu-btn" @click="mobileMenuOpen = !mobileMenuOpen">
+        <el-icon :size="24"><Expand v-if="!mobileMenuOpen" /><Fold v-else /></el-icon>
+      </div>
+
       <div class="navbar-brand">
         <el-link href="/" class="navbar-logo">{{ siteSettings.site_name }}</el-link>
         <el-text class="navbar-subtitle">{{ siteSettings.site_subtitle }}</el-text>
       </div>
 
-      <!-- 导航链接 -->
-      <div class="navbar-links">
+      <!-- 导航链接（桌面端可见） -->
+      <div class="navbar-links desktop-only">
         <el-link href="/" class="navbar-link">首页</el-link>
         <el-link href="/article/list" class="navbar-link">文章列表</el-link>
         <el-link href="/archive" class="navbar-link">文章归档</el-link>
@@ -38,13 +43,13 @@
           </el-icon>
         </div>
 
-        <!-- 未登录：显示登录/注册 -->
+        <!-- 未登录 -->
         <template v-if="!isLogin">
-          <el-button link class="navbar-btn" @click="goToLogin">登录</el-button>
+          <el-button link class="navbar-btn desktop-only" @click="goToLogin">登录</el-button>
           <el-button type="primary" class="navbar-btn" @click="goToRegister">注册</el-button>
         </template>
 
-        <!-- 已登录：显示用户名/登出 -->
+        <!-- 已登录 -->
         <template v-else>
           <el-badge
             :value="unreadCount"
@@ -56,13 +61,31 @@
             <el-icon :size="22" style="margin-right: 8px"><Bell /></el-icon>
           </el-badge>
           <el-avatar :size="32" :src="userInfo.avatar || ''" class="navbar-avatar" />
-          <el-text class="navbar-username">{{
+          <el-text class="navbar-username desktop-only">{{
             userInfo.nickname || userInfo.phone || "用户"
           }}</el-text>
-          <el-button link class="navbar-btn" @click="goToProfile">个人中心</el-button>
+          <el-button link class="navbar-btn desktop-only" @click="goToProfile">个人中心</el-button>
           <el-button link class="navbar-btn logout-btn" @click="handleLogout">退出登录</el-button>
         </template>
       </div>
+    </div>
+
+    <!-- 移动端下拉菜单 -->
+    <div v-if="mobileMenuOpen" class="mobile-menu">
+      <el-link href="/" class="mobile-link" @click="mobileMenuOpen = false">首页</el-link>
+      <el-link href="/article/list" class="mobile-link" @click="mobileMenuOpen = false">文章列表</el-link>
+      <el-link href="/archive" class="mobile-link" @click="mobileMenuOpen = false">文章归档</el-link>
+      <el-divider style="margin: 8px 0" />
+      <template v-if="!isLogin">
+        <el-button link class="mobile-link" @click="goToLogin">登录</el-button>
+      </template>
+      <template v-else>
+        <div class="mobile-user-info">
+          <el-avatar :size="28" :src="userInfo.avatar || ''" />
+          <span>{{ userInfo.nickname || userInfo.phone || "用户" }}</span>
+        </div>
+        <el-button link class="mobile-link" @click="goToProfile">个人中心</el-button>
+      </template>
     </div>
   </el-header>
 </template>
@@ -71,7 +94,7 @@
 import { ref, onMounted, watch, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { ElIcon } from "element-plus";
-import { Sunny, Moon, Bell } from "@element-plus/icons-vue";
+import { Sunny, Moon, Bell, Expand, Fold } from "@element-plus/icons-vue";
 import { getTheme, toggleTheme as toggleThemeUtil } from "@/utils/theme";
 import { useAuthStore } from "@/stores/auth";
 import { useNotificationStore } from "@/stores/notification";
@@ -80,6 +103,7 @@ import { useSettingsStore } from "@/stores/settings";
 const router = useRouter();
 const route = useRoute();
 const currentTheme = ref("light");
+const mobileMenuOpen = ref(false);
 
 // 初始化 Pinia store
 const authStore = useAuthStore();
@@ -105,11 +129,6 @@ const goToLogin = () => router.push("/login");
 const goToRegister = () => router.push("/register");
 const goToProfile = () => router.push("/profile");
 const goToNotification = () => router.push("/notification");
-
-// 加载网站设置
-const loadSiteSettings = async () => {
-  await settingsStore.loadSettings();
-};
 
 // 加载登录态
 const loadLoginState = async (forceRefresh = true) => {
@@ -139,7 +158,6 @@ const toggleTheme = () => {
 };
 
 onMounted(() => {
-  loadSiteSettings();
   loadLoginState(true);
   currentTheme.value = getTheme();
   loadUnreadNotificationCount();
@@ -263,14 +281,69 @@ watch(
   margin: 0 auto;
 }
 
-/* 右侧区域 - 固定宽度 */
+/* 右侧区域 */
 .navbar-user {
   flex-shrink: 0;
-  width: 280px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  margin-left: auto;
+}
+
+/* 移动端菜单按钮（桌面端隐藏） */
+.mobile-menu-btn {
+  display: none;
+  cursor: pointer;
+  padding: 4px;
+  margin-right: 12px;
+  color: #333;
+}
+
+.dark .mobile-menu-btn {
+  color: #e0e0e0;
+}
+
+/* 移动端下拉菜单 */
+.mobile-menu {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 16px 20px;
+  z-index: 99;
+}
+
+.dark .mobile-menu {
+  background-color: #1e1e1e;
+  border-bottom-color: #333;
+}
+
+.mobile-link {
+  display: block;
+  padding: 10px 0;
+  font-size: 16px;
+  color: #333 !important;
+}
+
+.dark .mobile-link {
+  color: #e0e0e0 !important;
+}
+
+.mobile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.dark .mobile-user-info {
+  color: #999;
 }
 
 /* 主题切换按钮样式 */
@@ -402,25 +475,60 @@ watch(
 /* 响应式设计 */
 @media (max-width: 1200px) {
   .navbar-search {
-    width: 300px;
+    width: 250px;
   }
-
   .navbar-search:hover {
-    width: 350px;
+    width: 280px;
+  }
+  .navbar-brand {
+    margin-right: 20px;
+  }
+  .navbar-links {
+    gap: 16px;
+    margin-right: 16px;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 860px) {
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+  }
   .navbar-search {
-    width: 200px;
+    width: 160px;
   }
-
   .navbar-search:hover {
-    width: 250px;
+    width: 180px;
   }
-
-  .navbar-username {
+  .navbar-brand {
+    margin-right: 12px;
+  }
+  .navbar-logo {
+    font-size: 18px;
+  }
+  .navbar-subtitle {
     display: none;
+  }
+  .navbar-container {
+    padding: 0 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-search {
+    width: 120px;
+  }
+  .navbar-search:hover {
+    width: 140px;
+  }
+  .navbar-container {
+    padding: 0 8px;
+  }
+  .navbar-logo {
+    font-size: 16px;
   }
 }
 </style>
