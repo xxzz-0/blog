@@ -136,6 +136,9 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- RAG AI 问答助手（右下角悬浮按钮 + 聊天面板） -->
+    <RagAssistant :category-list="categoryList" @insert-text="handleRagInsert" />
   </div>
 </template>
 
@@ -154,6 +157,7 @@ import {
 } from "@/api/article";
 import request from "@/utils/request";
 import ImageUpload from "@/components/ImageUpload.vue";
+import RagAssistant from "@/components/RagAssistant.vue";
 
 const route = useRoute();
 const router = useRouter();

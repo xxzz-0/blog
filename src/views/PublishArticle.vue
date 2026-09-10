@@ -182,6 +182,9 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- RAG AI 问答助手（右下角悬浮按钮 + 聊天面板） -->
+    <RagAssistant :category-list="categoryList" @insert-text="handleRagInsert" />
   </div>
 </template>
 
@@ -436,6 +439,20 @@ const handlePaste = async (e) => {
       }
     }
   }
+};
+
+// RAG 答案插入到文章内容末尾
+const handleRagInsert = (text) => {
+  if (!contentEditor.value || !text) return;
+  // 转义 HTML 防止 XSS，换行转为 <br>，作为段落追加到编辑器末尾
+  const safe = String(text)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\n/g, "<br>");
+  contentEditor.value.innerHTML += `<p>${safe}</p>`;
+  editorContent = contentEditor.value.innerHTML;
+  form.value.content = editorContent;
 };
 
 // 打开插入图片对话框
