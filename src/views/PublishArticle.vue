@@ -200,6 +200,7 @@ import {
 import { getLoginState } from "@/utils/auth";
 import request from "@/utils/request";
 import ImageUpload from "@/components/ImageUpload.vue";
+import RagAssistant from "@/components/RagAssistant.vue";
 
 const router = useRouter();
 const loading = ref(false);

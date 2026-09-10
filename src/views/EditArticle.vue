@@ -624,6 +624,16 @@ const publishArticle = async () => {
 
 const goBack = () => router.push("/profile");
 
+// RAG 答案插入到文章编辑器末尾
+const handleRagInsert = (text) => {
+  if (!text || !contentEditor.value) return;
+  // 用 <pre> 包裹保留 markdown 原始格式（用户可在编辑器中二次编辑）
+  const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const html = `<pre style="background:#f5f5f5;padding:12px;border-radius:6px;white-space:pre-wrap;overflow-x:auto;">${escaped}</pre><p><br></p>`;
+  contentEditor.value.innerHTML += html;
+  editorContent = contentEditor.value.innerHTML;
+};
+
 onMounted(async () => {
   // 先加载分类列表和用户列表，再加载文章详情
   await loadCategory();

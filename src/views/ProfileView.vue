@@ -147,34 +147,28 @@
               <div
                 v-for="article in collectList"
                 :key="article.id"
-                style="
-                  border: 1px solid #eee;
-                  padding: 15px;
-                  margin-bottom: 15px;
-                  border-radius: 8px;
-                  cursor: pointer;
-                "
+                class="profile-card"
                 @click="goToArticleDetail(article.id)"
               >
-                <h4 style="margin: 0 0 10px 0; color: #333">{{ article.title }}</h4>
-                <div style="font-size: 12px; color: #999; margin-bottom: 8px">
+                <h4 class="profile-card-title">{{ article.title }}</h4>
+                <div class="profile-card-meta">
                   <span>分类：{{ article.category_name || "未分类" }}</span>
                   <span style="margin-left: 15px">作者：{{ article.nickname }}</span>
                   <span style="margin-left: 15px"
                     >收藏时间：{{ formatTime(article.created_at) }}</span
                   >
                 </div>
-                <div style="font-size: 14px; color: #666; line-height: 1.5">
+                <div class="profile-card-summary">
                   {{ article.summary }}
                 </div>
-                <div style="margin-top: 10px; font-size: 12px; color: #999">
+                <div class="profile-card-stats">
                   <span>浏览：{{ article.view_count }}</span>
                   <span style="margin-left: 15px">点赞：{{ article.like_count }}</span>
                   <span style="margin-left: 15px">收藏：{{ article.collect_count }}</span>
                 </div>
                 <el-button
                   link
-                  style="color: #f56c6c; margin-top: 8px"
+                  class="profile-card-cancel"
                   @click.stop="cancelCollect(article.id)"
                   :loading="loading"
                 >
@@ -209,26 +203,20 @@
               <div
                 v-for="article in myArticleList"
                 :key="article.id"
-                style="
-                  border: 1px solid #eee;
-                  padding: 15px;
-                  margin-bottom: 15px;
-                  border-radius: 8px;
-                  cursor: pointer;
-                "
+                class="profile-card"
                 @click="goToArticleDetail(article.id)"
               >
-                <h4 style="margin: 0 0 10px 0; color: #333">{{ article.title }}</h4>
-                <div style="font-size: 12px; color: #999; margin-bottom: 8px">
+                <h4 class="profile-card-title">{{ article.title }}</h4>
+                <div class="profile-card-meta">
                   <span>分类：{{ article.category_name || "未分类" }}</span>
                   <span style="margin-left: 15px"
                     >发布时间：{{ formatTime(article.created_at) }}</span
                   >
                 </div>
-                <div style="font-size: 14px; color: #666; line-height: 1.5">
+                <div class="profile-card-summary">
                   {{ stripHtml(article.content).substring(0, 100) }}...
                 </div>
-                <div style="margin-top: 10px; font-size: 12px; color: #999">
+                <div class="profile-card-stats">
                   <span>浏览：{{ article.view_count }}</span>
                   <span style="margin-left: 15px">点赞：{{ article.like_count }}</span>
                   <span style="margin-left: 15px">收藏：{{ article.collect_count }}</span>
@@ -270,23 +258,17 @@
               <div
                 v-for="draft in myDraftList"
                 :key="draft.id"
-                style="
-                  border: 1px solid #eee;
-                  padding: 15px;
-                  margin-bottom: 15px;
-                  border-radius: 8px;
-                  cursor: pointer;
-                "
+                class="profile-card"
                 @click="goToEditArticle(draft.id)"
               >
-                <h4 style="margin: 0 0 10px 0; color: #333">{{ draft.title }}</h4>
-                <div style="font-size: 12px; color: #999; margin-bottom: 8px">
+                <h4 class="profile-card-title">{{ draft.title }}</h4>
+                <div class="profile-card-meta">
                   <span>分类：{{ draft.category_name || "未分类" }}</span>
                   <span style="margin-left: 15px"
                     >保存时间：{{ formatTime(draft.updated_at) }}</span
                   >
                 </div>
-                <div style="font-size: 14px; color: #666; line-height: 1.5">
+                <div class="profile-card-summary">
                   {{ stripHtml(draft.content).substring(0, 100) }}...
                 </div>
                 <div style="margin-top: 10px; display: flex; gap: 10px">
@@ -894,5 +876,136 @@ onMounted(async () => {
   background: #f8f9fa;
   border-radius: 8px;
   padding: 10px 0;
+}
+
+/* 暗黑模式 */
+.dark .profile-container {
+  border-color: #333;
+  background: #1e1e1e;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark .profile-container h2 {
+  color: #e0e0e0;
+}
+
+.dark .profile-container h3 {
+  color: #64b5f6 !important;
+}
+
+.dark .profile-container h4 {
+  color: #e0e0e0;
+}
+
+.dark .profile-container strong {
+  color: #c0c0c0;
+}
+
+.dark .profile-container div {
+  color: #c0c0c0;
+}
+
+.dark .profile-menu {
+  background: #252525;
+}
+
+.dark .profile-menu :deep(.el-menu-item) {
+  color: #c0c0c0;
+}
+
+.dark .profile-menu :deep(.el-menu-item:hover) {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+}
+
+.dark .profile-menu :deep(.el-menu-item.is-active) {
+  color: #64b5f6;
+}
+
+.dark .profile-container :deep(.el-input__wrapper) {
+  background-color: #252525;
+  box-shadow: 0 0 0 1px #444 inset;
+}
+
+.dark .profile-container :deep(.el-input__inner) {
+  color: #e0e0e0;
+}
+
+.dark .profile-container :deep(.el-select .el-input__wrapper) {
+  background-color: #252525;
+  box-shadow: 0 0 0 1px #444 inset;
+}
+
+.dark .profile-container :deep(.el-empty__description) {
+  color: #888;
+}
+
+/* 卡片样式 */
+.profile-card {
+  border: 1px solid #eee;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.profile-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.profile-card-title {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.profile-card-meta {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.profile-card-summary {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.profile-card-stats {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #999;
+}
+
+.profile-card-cancel {
+  color: #f56c6c;
+  margin-top: 8px;
+}
+
+/* 卡片暗黑模式 */
+.dark .profile-card {
+  border-color: #333;
+  background: #1e1e1e;
+}
+
+.dark .profile-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  background: #252525;
+}
+
+.dark .profile-card-title {
+  color: #e0e0e0;
+}
+
+.dark .profile-card-meta {
+  color: #888;
+}
+
+.dark .profile-card-summary {
+  color: #aaa;
+}
+
+.dark .profile-card-stats {
+  color: #888;
 }
 </style>

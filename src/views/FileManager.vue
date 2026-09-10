@@ -62,7 +62,7 @@
         <el-image
           :src="image.image_url"
           :preview-src-list="[image.image_url]"
-          style="width: 150px; height: 150px"
+          class="image-thumb"
         >
           <template #error>
             <div class="image-error">
@@ -275,12 +275,18 @@ h2 {
 }
 
 .image-item {
-  width: 150px;
+  width: 180px;
   border: 1px solid #e4e7ed;
   border-radius: 4px;
   padding: 10px;
   position: relative;
   transition: all 0.3s;
+}
+
+.image-thumb {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
 }
 
 .image-item:hover {
@@ -326,7 +332,7 @@ h2 {
 }
 
 .image-error {
-  width: 150px;
+  width: 100%;
   height: 150px;
   display: flex;
   align-items: center;
@@ -338,5 +344,45 @@ h2 {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+/* 暗黑模式 */
+.dark .file-manager h2 {
+  color: #e0e0e0;
+}
+
+.dark .search-filter {
+  color: #e0e0e0;
+}
+
+.dark .batch-actions {
+  background: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.dark .image-item {
+  border-color: #333;
+  background: #1e1e1e;
+}
+
+.dark .image-item:hover {
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.4);
+}
+
+.dark .image-item.selected {
+  border-color: #409eff;
+  background: #1a2a3a;
+}
+
+.dark .image-name {
+  color: #e0e0e0;
+}
+
+.dark .image-meta {
+  color: #888;
+}
+
+.dark .image-error {
+  background: #252525;
 }
 </style>

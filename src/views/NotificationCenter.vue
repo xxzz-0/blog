@@ -330,4 +330,42 @@ onMounted(() => {
   min-width: 80px;
   text-align: right;
 }
+
+/* 暗黑模式 */
+.dark .notification-container h2 {
+  color: #e0e0e0;
+}
+
+.dark .notification-item {
+  background: #1e1e1e;
+}
+
+.dark .notification-item:hover {
+  background: #2a2a2a;
+}
+
+.dark .notification-item.unread {
+  background: #2a1a1a;
+  border-left-color: #f56c6c;
+}
+
+.dark .notification-item.unread:hover {
+  background: #331a1a;
+}
+
+.dark .notification-icon {
+  background: #252525;
+}
+
+.dark .notification-content {
+  color: #e0e0e0;
+}
+
+.dark .notification-meta {
+  color: #888;
+}
+
+.dark .notification-type {
+  color: #64b5f6;
+}
 </style>

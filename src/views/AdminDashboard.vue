@@ -52,6 +52,15 @@
             <h2>{{ currentPageTitle }}</h2>
           </div>
           <div class="header-right">
+            <div
+              class="admin-theme-toggle"
+              @click="toggleTheme"
+              :title="currentTheme === 'light' ? '切换暗黑模式' : '切换亮色模式'"
+            >
+              <el-icon :size="20">
+                <component :is="currentTheme === 'light' ? Moon : Sunny" />
+              </el-icon>
+            </div>
             <el-dropdown>
               <span class="user-info">
                 <el-avatar :size="32" :src="authStore.currentUser.avatar || ''" />
@@ -1018,11 +1027,19 @@ import {
   ChatLineRound,
   Message,
   Check,
+  Sunny,
+  Moon,
 } from "@element-plus/icons-vue";
+import { getTheme, toggleTheme as toggleThemeUtil } from "@/utils/theme";
 
 const router = useRouter();
 const activeMenu = ref("dashboard");
 const sidebarCollapsed = ref(false);
+const currentTheme = ref(getTheme());
+
+const toggleTheme = () => {
+  currentTheme.value = toggleThemeUtil();
+};
 
 // 初始化 Pinia store
 const authStore = useAuthStore();
@@ -1240,7 +1257,7 @@ const loadArticles = async () => {
       params.status = articleFilter.value.status;
     }
 
-    const res = await request.get("/articles/", { params });
+    const res = await request.get("/articles/", { params: { ...params, include_private: true } });
     if (res.code === 200) {
       articles.value = res.data.results;
       articleTotal.value = res.data.count;
@@ -1987,6 +2004,11 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
 .user-info {
   display: flex;
   align-items: center;
@@ -1999,6 +2021,32 @@ onUnmounted(() => {
 
 .user-info:hover {
   background-color: #f3f4f6;
+}
+
+.admin-theme-toggle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 12px;
+  color: #333;
+}
+
+.admin-theme-toggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: scale(1.05);
+}
+
+.dark .admin-theme-toggle {
+  color: #e0e0e0;
+}
+
+.dark .admin-theme-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .admin-main {
@@ -2113,6 +2161,183 @@ onUnmounted(() => {
   padding: 40px 0;
   display: flex;
   justify-content: center;
+}
+
+/* ==================== 暗黑模式样式 ==================== */
+.dark .admin-header {
+  background-color: #1e1e1e;
+  border-bottom-color: #333;
+}
+
+.dark .header-left h2 {
+  color: #e0e0e0;
+}
+
+.dark .user-info {
+  color: #e0e0e0;
+}
+
+.dark .user-info:hover {
+  background-color: #2a2a2a;
+}
+
+.dark .admin-main {
+  background-color: #121212;
+}
+
+/* 仪表盘暗黑模式 */
+.dark .stat-card {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+.dark .stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.dark .stat-icon {
+  background-color: #1a2a3a;
+  color: #409eff;
+}
+
+.dark .stat-value {
+  color: #e0e0e0;
+}
+
+.dark .stat-label {
+  color: #999;
+}
+
+.dark .chart-card {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+.dark .chart-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.dark .chart-header {
+  color: #e0e0e0;
+}
+
+/* 审核页面暗黑模式 */
+.dark .audit-header {
+  color: #e0e0e0;
+}
+
+/* Element Plus 组件暗黑模式覆盖 */
+.dark .admin-main :deep(.el-table) {
+  --el-table-bg-color: #1e1e1e;
+  --el-table-tr-bg-color: #1e1e1e;
+  --el-table-header-bg-color: #252525;
+  --el-table-border-color: #333;
+  --el-table-text-color: #e0e0e0;
+  --el-table-header-text-color: #e0e0e0;
+  --el-table-row-hover-bg-color: #2a2a2a;
+}
+
+.dark .admin-main :deep(.el-table th.el-table__cell) {
+  background-color: #252525;
+}
+
+.dark .admin-main :deep(.el-pagination) {
+  --el-pagination-bg-color: #1e1e1e;
+  --el-pagination-text-color: #e0e0e0;
+  --el-pagination-button-bg-color: #1e1e1e;
+}
+
+.dark .admin-main :deep(.el-pagination .btn-prev),
+.dark .admin-main :deep(.el-pagination .btn-next) {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+}
+
+.dark .admin-main :deep(.el-card) {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+.dark .admin-main :deep(.el-dialog) {
+  --el-dialog-bg-color: #1e1e1e;
+}
+
+.dark .admin-main :deep(.el-dialog__title) {
+  color: #e0e0e0;
+}
+
+.dark .admin-main :deep(.el-dialog__body) {
+  color: #c0c0c0;
+}
+
+.dark .admin-main :deep(.el-form-item__label) {
+  color: #c0c0c0;
+}
+
+.dark .admin-main :deep(.el-input__wrapper) {
+  background-color: #252525;
+  box-shadow: 0 0 0 1px #444 inset;
+}
+
+.dark .admin-main :deep(.el-input__inner) {
+  color: #e0e0e0;
+}
+
+.dark .admin-main :deep(.el-select .el-input__wrapper) {
+  background-color: #252525;
+  box-shadow: 0 0 0 1px #444 inset;
+}
+
+.dark .admin-main :deep(.el-select-dropdown) {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+.dark .admin-main :deep(.el-select-dropdown__item) {
+  color: #e0e0e0;
+}
+
+.dark .admin-main :deep(.el-select-dropdown__item.hover),
+.dark .admin-main :deep(.el-select-dropdown__item:hover) {
+  background-color: #2a2a2a;
+}
+
+.dark .admin-main :deep(.el-button--default) {
+  --el-button-bg-color: #252525;
+  --el-button-border-color: #444;
+  --el-button-text-color: #e0e0e0;
+}
+
+.dark .admin-main :deep(.el-button--default:hover) {
+  --el-button-bg-color: #333;
+  --el-button-border-color: #555;
+}
+
+.dark .admin-main :deep(.el-empty__description) {
+  color: #999;
+}
+
+.dark .admin-main :deep(.el-alert) {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+.dark .admin-main :deep(.el-tag) {
+  --el-tag-bg-color: #252525;
+  --el-tag-border-color: #444;
+  --el-tag-text-color: #e0e0e0;
+}
+
+.dark .admin-main :deep(.el-switch__label) {
+  color: #c0c0c0;
+}
+
+.dark .admin-main :deep(.el-radio__label) {
+  color: #c0c0c0;
+}
+
+.dark .admin-main :deep(.el-checkbox__label) {
+  color: #c0c0c0;
 }
 
 /* 响应式调整 */
