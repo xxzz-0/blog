@@ -138,7 +138,11 @@
     </el-dialog>
 
     <!-- RAG AI 问答助手（右下角悬浮按钮 + 聊天面板） -->
-    <RagAssistant :category-list="categoryList" @insert-text="handleRagInsert" />
+    <RagAssistant
+      :category-list="categoryList"
+      :get-editor-content="getRagEditorContent"
+      @insert-text="handleRagInsert"
+    />
   </div>
 </template>
 
@@ -637,6 +641,9 @@ const handleRagInsert = (text) => {
   contentEditor.value.innerHTML += html;
   editorContent = contentEditor.value.innerHTML;
 };
+
+// 供 RAG 建议模式读取当前编辑器内容（富文本 HTML，后端去标签+截断）
+const getRagEditorContent = () => (contentEditor.value ? contentEditor.value.innerHTML : "");
 
 onMounted(async () => {
   // 先加载分类列表和用户列表，再加载文章详情

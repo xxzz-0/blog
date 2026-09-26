@@ -184,7 +184,11 @@
     </el-dialog>
 
     <!-- RAG AI 问答助手（右下角悬浮按钮 + 聊天面板） -->
-    <RagAssistant :category-list="categoryList" @insert-text="handleRagInsert" />
+    <RagAssistant
+      :category-list="categoryList"
+      :get-editor-content="getRagEditorContent"
+      @insert-text="handleRagInsert"
+    />
   </div>
 </template>
 
@@ -454,6 +458,9 @@ const handleRagInsert = (text) => {
   editorContent = contentEditor.value.innerHTML;
   form.value.content = editorContent;
 };
+
+// 供 RAG 建议模式读取当前编辑器内容（富文本 HTML，后端去标签+截断）
+const getRagEditorContent = () => (contentEditor.value ? contentEditor.value.innerHTML : "");
 
 // 打开插入图片对话框
 const insertImage = () => {
